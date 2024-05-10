@@ -1,6 +1,3 @@
-import { Router } from "express";
-import * as controller from "../controllers/index";
-
-export const index = Router();
-
-index.get("/", controller.index);
+export * from './file.routes';
+export * from './home.routes';
+export * from './user.routes';

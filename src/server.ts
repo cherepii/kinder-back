@@ -1,6 +1,10 @@
+import "colors";
+
 import { app } from "./app";
+import { connectDB } from "./config";
 
 const port = app.get("port");
+const node_env = app.get("node_env");
 
 const server = app.listen(port, onListening);
 server.on("error", onError);
@@ -27,11 +31,12 @@ function onError(error: NodeJS.ErrnoException) {
     }
 }
 
-function onListening() {
+async function onListening() {
     const addr = server.address();
     const bind =
         typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`;
-    console.log(`Listening on ${bind}`);
+    console.log(`Listening on ${bind .underline} in ${String(node_env) .underline} mode` .yellow.bold);
+    await connectDB();
 }
 
 export default server;
