@@ -11,24 +11,26 @@ import { mkdir } from "fs/promises";
  * Upload files from web.
  */
 const uploadFileFromWeb = expressAsyncHandler<any, any, TWebFileUploadDto>(async(req, res) => {
-  const fileData = req.file;
+  const files = req.files;
   const body = req.body;
   
-  if (!fileData) {
+  if (!files) {
     throw { status: 400, message: 'File not found' };
   }
   if (!body.phoneNumber) {
     throw { status: 400, message: 'Заполните обязательное поле номер телефона!' };
   }
 
-  const filePath = `/uploads/${fileData.filename}`;
-
   const user = await UserModel
-    .findOneAndUpdate(
-      { phoneNumber: body.phoneNumber },
-      { email: body.email, username: body.username }, { upsert: true, new: true },
-    );
-  await FileModel.create({ path: filePath, ownerId: user._id });
+  .findOneAndUpdate(
+    { phoneNumber: body.phoneNumber },
+    { email: body.email, username: body.username }, { upsert: true, new: true },
+  );
+
+  for (const file of (files as Express.Multer.File[])) {
+    const filePath = `/uploads/${file.filename}`;
+    await FileModel.create({ path: filePath, ownerId: user._id });
+  }
   
   res.status(200).json({ message: 'File uploaded successfully' });
 });

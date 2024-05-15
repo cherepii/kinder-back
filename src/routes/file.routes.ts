@@ -17,5 +17,5 @@ const upload = multer({ storage });
 
 export const fileRouter = Router();
 
-fileRouter.post('/web-upload', upload.single('file'), FileController.uploadFileFromWeb);
+fileRouter.post('/web-upload', upload.array('files'), FileController.uploadFileFromWeb);
 fileRouter.post('/telegram-upload', FileController.uploadFileFromTelegram);

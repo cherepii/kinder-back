@@ -1,6 +1,7 @@
 import express from "express";
 import logger from "morgan";
 import * as path from "path";
+import cors from "cors";
 
 import { errorHandler, errorNotFoundHandler } from "./middlewares/errorHandler";
 
@@ -16,6 +17,7 @@ app.set("node_env", Env.NODE_ENV);
 app.set("views", path.join(__dirname, "../views"));
 app.set("view engine", "pug");
 
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(logger("dev"));
 
