@@ -1,6 +1,6 @@
 import expressAsyncHandler from "express-async-handler";
 import { TTelegramFileUploadDto, TWebFileUploadDto } from "../dto";
-import { FileModel, UserModel } from "../models";
+import { FileModel, TFile, UserModel } from "../models";
 import { createWriteStream, existsSync } from "fs";
 import path from "path";
 import fetch from "node-fetch";
@@ -13,17 +13,19 @@ import { mkdir } from "fs/promises";
 const uploadFileFromWeb = expressAsyncHandler<any, any, TWebFileUploadDto>(async(req, res) => {
   const files = req.files;
   const body = req.body;
+
+  const formattedPhone = body.phoneNumber?.replace(/\D/g, '');
   
   if (!files) {
     throw { status: 400, message: 'File not found' };
   }
-  if (!body.phoneNumber) {
+  if (!formattedPhone) {
     throw { status: 400, message: 'Заполните обязательное поле номер телефона!' };
   }
 
   const user = await UserModel
   .findOneAndUpdate(
-    { phoneNumber: body.phoneNumber },
+    { phoneNumber: formattedPhone },
     { email: body.email, username: body.username }, { upsert: true, new: true },
   );
 
@@ -42,8 +44,16 @@ const uploadFileFromWeb = expressAsyncHandler<any, any, TWebFileUploadDto>(async
 const uploadFileFromTelegram = expressAsyncHandler<any, any, TTelegramFileUploadDto>(async (req, res) => {
   const { instagramName, phoneNumber, photoUrls, tg_user_id, tg_username, username } = req.body;
 
+  const formattedPhone = phoneNumber?.replace(/\D/g, '');
+
+  if (!formattedPhone)
+    throw {
+      status: 400,
+      message: 'Invalid phone number',
+    };
+
   const user = await UserModel.findOneAndUpdate(
-    { phoneNumber },
+    { phoneNumber: formattedPhone },
     { instagramName, tg_user_id, tg_username, username }, { upsert: true, new: true },
   );
 
@@ -74,7 +84,34 @@ const uploadFileFromTelegram = expressAsyncHandler<any, any, TTelegramFileUpload
   res.status(200).json({ message: 'Files uploaded successfully' });
 });
 
+/**
+ * GET /files?phoneNumber={value}
+ * Get files for single user
+ */
+const getUserFiles = expressAsyncHandler<any, any, any, {phoneNumber: string}>(async (req, res) => {
+  const phoneNumber = req.query.phoneNumber;
+  const formattedPhone = phoneNumber?.replace(/\D/g, '');
+
+  if (!formattedPhone)
+    throw {
+      status: 400,
+      message: 'Invalid phone number',
+    };
+
+  const user = await UserModel.findOne({ phoneNumber: formattedPhone }).populate('files');
+  if (!user) 
+    throw {
+      status: 400,
+      message: "User not found",
+    };
+  
+  const files = user.files.map(file => (file as TFile).path);
+
+  res.status(200).json({ files });
+});
+
 export const FileController = {
   uploadFileFromWeb,
   uploadFileFromTelegram,
+  getUserFiles,
 };
