@@ -5,6 +5,7 @@ import { createWriteStream, existsSync } from "fs";
 import path from "path";
 import fetch from "node-fetch";
 import { mkdir } from "fs/promises";
+import { Env } from "../config";
 
 /**
  * POST /files/web-upload
@@ -105,7 +106,9 @@ const getUserFiles = expressAsyncHandler<any, any, any, {phoneNumber: string}>(a
       message: "User not found",
     };
   
-  const files = user.files.map(file => (file as TFile).path);
+  const apiUrl = Env.API_URL;
+  const files = user.files.map(file => apiUrl + (file as TFile).path);
+
 
   res.status(200).json({ files });
 });
