@@ -100,17 +100,11 @@ const getUserFiles = expressAsyncHandler<any, any, any, {phoneNumber: string}>(a
     };
 
   const user = await UserModel.findOne({ phoneNumber: formattedPhone }).populate('files');
-  if (!user) 
-    throw {
-      status: 400,
-      message: "User not found",
-    };
   
   const apiUrl = Env.API_URL;
-  const files = user.files.map(file => apiUrl + (file as TFile).path);
+  const files = user?.files?.map(file => apiUrl + (file as TFile).path) || [];
 
-
-  res.status(200).json({ files });
+  res.status(200).json({ files, message: files?.length ? 'Client' : 'User not found' });
 });
 
 export const FileController = {
