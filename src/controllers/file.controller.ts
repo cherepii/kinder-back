@@ -1,7 +1,7 @@
 import expressAsyncHandler from "express-async-handler";
 import { TTelegramFileUploadDto, TWebFileUploadDto } from "../dto";
 import { FileModel, TFile, UserModel } from "../models";
-import { createWriteStream, existsSync } from "fs";
+import { createWriteStream, existsSync, unlinkSync } from "fs";
 import path from "path";
 import fetch from "node-fetch";
 import { mkdir } from "fs/promises";
@@ -107,8 +107,36 @@ const getUserFiles = expressAsyncHandler<any, any, any, {phoneNumber: string}>(a
   res.status(200).json({ files, message: files?.length ? 'Client' : 'User not found' });
 });
 
+/**
+ * DELETE /files/:id
+ * Delete file by id
+ */
+const deleteFileById = expressAsyncHandler<{id: string}>(async (req, res) => {
+  const fileId = req.params.id;
+
+  if (!fileId)
+    throw {
+      status: 400,
+      message: 'File id is required',
+    };
+  
+  const file = await FileModel.findByIdAndDelete(fileId);
+
+  if (!file) throw {
+    status: 400,
+    message: 'File not found',
+  };
+  
+  const filePath = path.join(__dirname, '../..', file.path);
+
+  unlinkSync(filePath);
+
+  res.status(200).json({ message: 'File deleted successfully' });
+});
+
 export const FileController = {
   uploadFileFromWeb,
   uploadFileFromTelegram,
   getUserFiles,
+  deleteFileById,
 };
