@@ -1,10 +1,17 @@
-//eslint-disable
-import mongoose from "mongoose";
+import mongoose, { ConnectOptions } from "mongoose";
 import { Env } from "./env.config";
 
-const options = Env.NODE_ENV === 'production'
-  ? { user: Env.DB_USER, pass: Env.DB_PWD }
+const options: ConnectOptions | undefined = Env.NODE_ENV === 'production'
+  ? {
+    authSource: 'admin',
+    directConnection: true,
+    auth: {
+      username: Env.DB_USER,
+      password: Env.DB_PWD,
+    },
+  }
   : undefined;
+
 
 export const connectDB = async () => {
   try {
