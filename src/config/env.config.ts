@@ -10,4 +10,6 @@ export const Env = {
   NODE_ENV: process.env.NODE_ENV?.toString(),
   PORT: process.env.PORT?.toString(),
   DB_URI: process.env.DB_URI?.toString(),
+  DB_USER: process.env.DB_USER?.toString(),
+  DB_PWD: process.env.DB_PWD?.toString(),
 };
