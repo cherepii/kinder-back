@@ -1,7 +1,7 @@
-import { Router } from "express";
+import { Request, Router } from "express";
 import { FileController } from "../controllers";
 
-import multer from "multer";
+import multer, { FileFilterCallback } from "multer";
 import path from "path";
 
 const FIVE_MB_IN_BYTES = 5 * 1024 * 1024;
@@ -11,11 +11,17 @@ const storage = multer.diskStorage({
     cb(null, path.join(__dirname, '../../uploads'));
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); //Appending extension
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 
-const upload = multer({ storage, limits: { fileSize: FIVE_MB_IN_BYTES } });
+const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+  const fileType = file.mimetype.split('/')[0];
+  if (fileType === 'image') return cb(null, true);
+  return cb(new Error('Only image formats are allowed'));
+};
+
+const upload = multer({ storage, limits: { fileSize: FIVE_MB_IN_BYTES }, fileFilter });
 
 export const fileRouter = Router();
 
