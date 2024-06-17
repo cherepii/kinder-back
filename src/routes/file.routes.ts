@@ -16,8 +16,13 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+  const allowedFormats = /png|jpeg|jpg|wepm|wepb|svg|HEIC/;
+
+  const extension = path.extname(file.originalname);
+  const extname = allowedFormats.test(extension);
+  
   const fileType = file.mimetype.split('/')[0];
-  if (fileType === 'image') return cb(null, true);
+  if (fileType === 'image' && extname) return cb(null, true);
   return cb(new Error('Only image formats are allowed'));
 };
 
