@@ -10,10 +10,6 @@ export class File extends TimeStamps {
   @prop({ required: true })
   owner: ObjectId;
 
-  //need to delete
-  @prop({ required: false })
-  ownerId: ObjectId;
-
   @prop({ required: false, default: FileStatusesEnum.SIGNED })
   status: string;
 }
