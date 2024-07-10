@@ -1,3 +1,5 @@
+import { FileStatusesEnum } from "../types";
+
 export type TWebFileUploadDto = {
   email: string
   phoneNumber: string
@@ -11,4 +13,8 @@ export type TTelegramFileUploadDto = {
   photoUrls: string[]
   tg_user_id: number
   tg_username: string
+};
+
+export type TUpdateFileStatusDto = {
+  status: FileStatusesEnum
 };

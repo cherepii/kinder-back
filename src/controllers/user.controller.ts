@@ -9,7 +9,7 @@ const getUsers = expressAsyncHandler(async(req, res) => {
   const users = await UserModel
     .find()
     .select('-password -__v')
-    .populate('files', 'path createdAt');
+    .populate('files', 'path createdAt status');
 
   res.status(200).json({ users });
 });
@@ -29,7 +29,25 @@ const getUserByPhoneNumber = expressAsyncHandler<any, any, any, {phoneNumber: st
   const user = await UserModel
     .findOne({ phoneNumber: formattedPhone })
     .select('-__v')
-    .populate('files', 'path createdAt');
+    .populate('files', 'path createdAt status');
+  
+  if (!user)
+    throw { status: 400, message: 'User not found' };
+
+  res.status(200).json({ user });
+});
+
+/**
+ * GET /api/users/:id
+ * Get user by id
+ */
+const getUserById = expressAsyncHandler<{id: string}>(async (req, res) => {
+  const userId = req.params.id;
+
+  const user = await UserModel
+    .findById(userId)
+    .select('-__v')
+    .populate('files', 'path createdAt status');
   
   if (!user)
     throw { status: 400, message: 'User not found' };
@@ -40,4 +58,5 @@ const getUserByPhoneNumber = expressAsyncHandler<any, any, any, {phoneNumber: st
 export const UserController = {
   getUsers,
   getUserByPhoneNumber,
+  getUserById,
 };

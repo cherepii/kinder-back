@@ -1,5 +1,5 @@
 import expressAsyncHandler from "express-async-handler";
-import { TTelegramFileUploadDto, TWebFileUploadDto } from "../dto";
+import { TTelegramFileUploadDto, TUpdateFileStatusDto, TWebFileUploadDto } from "../dto";
 import { FileModel, TFile, UserModel } from "../models";
 import { createWriteStream, existsSync, unlinkSync } from "fs";
 import path from "path";
@@ -32,7 +32,7 @@ const uploadFileFromWeb = expressAsyncHandler<any, any, TWebFileUploadDto>(async
 
   for (const file of (files as Express.Multer.File[])) {
     const filePath = `/uploads/${file.filename}`;
-    await FileModel.create({ path: filePath, ownerId: user._id });
+    await FileModel.create({ path: filePath, owner: user._id });
   }
   
   res.status(200).json({ message: 'File uploaded successfully' });
@@ -79,7 +79,7 @@ const uploadFileFromTelegram = expressAsyncHandler<any, any, TTelegramFileUpload
     const writePath = path.join(uploadsFolder, fileName);
     
     res.body.pipe(createWriteStream(writePath));
-    await FileModel.create({ path: `/uploads/${fileName}` , ownerId: user._id });
+    await FileModel.create({ path: `/uploads/${fileName}` , owner: user._id });
   }
 
   res.status(200).json({ message: 'Files uploaded successfully' });
@@ -134,9 +134,33 @@ const deleteFileById = expressAsyncHandler<{id: string}>(async (req, res) => {
   res.status(200).json({ message: 'File deleted successfully' });
 });
 
+/**
+ * PUT /files/:id
+ * update file status by id
+ */
+export const updateFileStatusById = expressAsyncHandler<{id: string}, any, TUpdateFileStatusDto>(async(req, res) => {
+  const { status } = req.body;
+  const fileId = req.params.id;
+
+  const updatedFile = await FileModel.findByIdAndUpdate(fileId, { status });
+  if (!updatedFile) throw {
+    status: 400,
+    message: 'File not found',
+  };
+
+  res.status(200).json({ message: 'File status updated successfully' });
+});
+
+export const getAllFiles = expressAsyncHandler(async(req, res) => {
+  const files = await FileModel.find().populate('owner', '', UserModel);
+  res.status(200).json({ files });
+});
+
 export const FileController = {
   uploadFileFromWeb,
   uploadFileFromTelegram,
   getUserFiles,
   deleteFileById,
+  updateFileStatusById,
+  getAllFiles,
 };

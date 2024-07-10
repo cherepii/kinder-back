@@ -26,7 +26,7 @@ export class User extends TimeStamps {
 
   @prop({
     ref: () => File,
-    foreignField: 'ownerId',
+    foreignField: 'owner',
     localField: '_id',
     autopopulate: true,
   })

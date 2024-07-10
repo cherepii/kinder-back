@@ -8,3 +8,4 @@ userRouter.get<any, any, any, any, {phoneNumber: string}>('/', (req, res, next) 
   if (phoneNumber) UserController.getUserByPhoneNumber(req, res, next);
   else UserController.getUsers(req, res ,next);
 });
+userRouter.get('/:id', UserController.getUserById);

@@ -1,2 +1,2 @@
-export * from './file-upload.dto';
+export * from './file.dto';
 export * from './user.dto';
