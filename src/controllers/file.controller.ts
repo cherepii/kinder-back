@@ -5,7 +5,8 @@ import { createWriteStream, existsSync, unlinkSync } from "fs";
 import path from "path";
 import fetch from "node-fetch";
 import { mkdir } from "fs/promises";
-import { Env } from "../config";
+import { Env, userFilesStatusesMap } from "../config";
+import { FileStatusesEnum } from "../types";
 
 /**
  * POST /files/web-upload
@@ -102,7 +103,14 @@ const getUserFiles = expressAsyncHandler<any, any, any, {phoneNumber: string}>(a
   const user = await UserModel.findOne({ phoneNumber: formattedPhone }).populate('files');
   
   const apiUrl = Env.API_URL;
-  const files = user?.files?.map(file => apiUrl + (file as TFile).path) || [];
+  const files: string[] = [];
+
+  user?.files?.forEach((file) => {
+    const readableStatus = userFilesStatusesMap[(file as TFile)?.status as FileStatusesEnum];
+    
+    files.push(`Статус фото: ${readableStatus}`);
+    files.push(apiUrl + (file as TFile)?.path);
+  });
 
   res.status(200).json({ files, message: files?.length ? 'Client' : 'User not found' });
 });
