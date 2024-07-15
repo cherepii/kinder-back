@@ -159,8 +159,12 @@ export const updateFileStatusById = expressAsyncHandler<{id: string}, any, TUpda
   res.status(200).json({ message: 'File status updated successfully' });
 });
 
-export const getAllFiles = expressAsyncHandler(async(req, res) => {
-  const files = await FileModel.find().populate('owner', '', UserModel);
+export const getAllFiles = expressAsyncHandler<any, any, any, {status: FileStatusesEnum}>(async(req, res) => {
+  const status = req.query.status;
+  
+  const query = status ? { status } : {};
+  
+  const files = await FileModel.find(query).populate('owner', '', UserModel);
   res.status(200).json({ files });
 });
 
